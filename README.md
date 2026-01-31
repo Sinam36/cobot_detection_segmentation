@@ -62,7 +62,7 @@ weights/, images/, and output_images/ are runtime-generated and are not tracked 
 
 ## 🔧 Installation & Setup
 
-1. Clone the repository
+#### 1. Clone the repository
    
 ```text
 git clone https://github.com/Sinam36/cobot_detection_segmentation.git
@@ -71,7 +71,7 @@ git clone https://github.com/Sinam36/cobot_detection_segmentation.git
 cd cobot_detection_segmentation
 ```
 
-2. Create and activate a virtual environment
+#### 2. Create and activate a virtual environment
 
 Using conda (recommended):
 
@@ -81,15 +81,15 @@ conda create -n cobot python=3.10 -y
 conda activate cobot
 ```
 
-3. Install dependencies
+#### 3. Install dependencies
    
-#### For Text-based command parsing (LLM + Vision) (cobot.py):
+##### For Text-based command parsing (LLM + Vision) (cobot.py):
 
 ```text
 pip install -r requirements.txt
 ```
 
-#### For voice-controlled mode (STT + LLM + Vision) (cobot_stt.py):
+##### For voice-controlled mode (STT + LLM + Vision) (cobot_stt.py):
 
 ```text
 pip install -r requirements_stt.txt
@@ -99,7 +99,7 @@ pip install -r requirements_stt.txt
 
 Install only what you need.
 
-4. (Optional but recommended) Enable GPU support
+#### 4. (Optional but recommended) Enable GPU support
 
 If you have an NVIDIA GPU with CUDA installed:
 
@@ -147,7 +147,7 @@ weights/yoloe-26l-seg.pt
 ## ▶️ Running the Code
 
 #### Text-based command parsing (Vision + LLM)
-- python cobot.py
+##### - python cobot.py
 
 You will be prompted to enter a command such as:
 
@@ -160,7 +160,7 @@ The LLM extracts the target object and triggers detection.
 
 
 #### Voice-controlled detection (STT + LLM + Vision)
-- python cobot_stt.py
+##### - python cobot_stt.py
 
 
 Instructions:

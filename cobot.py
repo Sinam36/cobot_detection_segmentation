@@ -137,6 +137,7 @@ def main():
     if not cap.isOpened():
         raise RuntimeError("Camera could not be opened")
 
+    
     # QUERY LOOP
     while True:
         try:

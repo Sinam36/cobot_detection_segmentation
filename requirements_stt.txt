@@ -1,0 +1,8 @@
+torch==2.5.1
+ultralytics==8.4.7
+opencv-python==4.13.0.90
+numpy==2.2.6
+sounddevice==0.5.5
+faster-whisper==1.2.1
+llama-cpp-python==0.3.16
+huggingface-hub==0.36.0

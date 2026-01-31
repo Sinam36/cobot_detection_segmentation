@@ -113,6 +113,8 @@ Verify:
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
+---
+
 ## 📦 Model Weights
 
 ### YOLO Segmentation Model (Required)
@@ -139,6 +141,8 @@ weights/yoloe-26l-seg.pt
 - File: Llama-3.2-3B-Instruct-Q4_K_M.gguf
 
 - No manual download is required.
+
+---
 
 ## ▶️ Running the Code
 
@@ -168,6 +172,8 @@ Speak a command (e.g. “pick up the bottle”)
 ```
 
 The system parses the object and runs detection
+
+---
 
 ## 🧠 How It Works (High-Level)
 
@@ -201,6 +207,7 @@ The system parses the object and runs detection
 
 ##### All inference runs fully offline.
 
+---
 
 ## ⚙️ System Requirements
 
@@ -215,6 +222,8 @@ The system parses the object and runs detection
 - NVIDIA GPU recommended (CUDA 12.x)
 
 - CPU-only mode is supported but slower.
+
+---
 
 ## 📌 Notes
 

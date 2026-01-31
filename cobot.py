@@ -8,7 +8,7 @@ from ultralytics import YOLO
 from llama_cpp import Llama
 from huggingface_hub import hf_hub_download
 
-# --- CONFIGURATION ---
+# CONFIGURATION
 CAMERA_INDEX = 1
 MODEL_PATH = "weights/yoloe-26l-seg.pt"
 SAVE_DIR = "images"
@@ -24,7 +24,7 @@ LLM_FILE = "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
 WEIGHTS_DIR = "weights"
 LLM_LOCAL_PATH = os.path.join(WEIGHTS_DIR, LLM_FILE)
 
-# # --- SOCKET SETUP ---
+# SOCKET SETUP 
 # try:
 #     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #     host = '10.202.3.58'
@@ -141,8 +141,8 @@ def main():
     # QUERY LOOP
     while True:
         try:
-            # Get text input instead of voice
-            user_input = input("\nEnter command (e.g., 'pick up the red cup') or 'q' to exit: ").strip()
+            # Get text input from the user
+            user_input = input("\nEnter command or 'q' to exit: ").strip()
         except EOFError:
             break
             

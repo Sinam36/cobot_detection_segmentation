@@ -62,29 +62,36 @@ weights/, images/, and output_images/ are runtime-generated and are not tracked 
 
 1. Clone the repository
    
+```text
 git clone https://github.com/Sinam36/cobot_detection_segmentation.git
-
+```
+```text
 cd cobot_detection_segmentation
+```
 
 2. Create and activate a virtual environment
 
 Using conda (recommended):
 
+```text
 conda create -n cobot python=3.10 -y
 
 conda activate cobot
+```
 
 3. Install dependencies
    
 #### For Text-based command parsing (LLM + Vision) (cobot.py):
 
+```text
 pip install -r requirements.txt
-
+```
 
 #### For voice-controlled mode (STT + LLM + Vision) (cobot_stt.py):
 
+```text
 pip install -r requirements_stt.txt
-
+```
 
 ##### ⚠️ Dependency files are intentionally separated.
 
@@ -94,12 +101,15 @@ Install only what you need.
 
 If you have an NVIDIA GPU with CUDA installed:
 
+```text
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-
+```
 
 Verify:
 
+```text
 python -c "import torch; print(torch.cuda.is_available())"
+```
 
 ## 📦 Model Weights
 
@@ -111,8 +121,9 @@ Download the YOLO segmentation model from the official Ultralytics release:
 
 Place the file at:
 
+```text
 weights/yoloe-26l-seg.pt
-
+```
 
 The weights/ directory is created automatically if missing.
 

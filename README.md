@@ -58,6 +58,8 @@ Note:
 
 weights/, images/, and output_images/ are runtime-generated and are not tracked in this repository
 
+---
+
 ## 🔧 Installation & Setup
 
 1. Clone the repository
@@ -115,33 +117,33 @@ python -c "import torch; print(torch.cuda.is_available())"
 
 ### YOLO Segmentation Model (Required)
 
-Download the YOLO segmentation model from the official Ultralytics release:
+- Download the YOLO segmentation model from the official Ultralytics release:
 
 👉 [Download yoloe-26l-seg-pf.pt](https://github.com/ultralytics/assets/releases/download/v8.4.0/yoloe-26l-seg-pf.pt)
 
-Place the file at:
+- Place the file at:
 
 ```text
 weights/yoloe-26l-seg.pt
 ```
 
-The weights/ directory is created automatically if missing.
+- The weights/ directory is created automatically if missing.
 
 
 ### LLaMA Model (Required for LLM Parsing)
 
-For both cobot.py and cobot_stt.py, the LLaMA GGUF model is automatically downloaded on first run from Hugging Face:
+- For both cobot.py and cobot_stt.py, the LLaMA GGUF model is automatically downloaded on first run from Hugging Face:
 
-Repository: bartowski/Llama-3.2-3B-Instruct-GGUF
+- Repository: bartowski/Llama-3.2-3B-Instruct-GGUF
 
-File: Llama-3.2-3B-Instruct-Q4_K_M.gguf
+- File: Llama-3.2-3B-Instruct-Q4_K_M.gguf
 
-No manual download is required.
+- No manual download is required.
 
 ## ▶️ Running the Code
 
 #### Text-based command parsing (Vision + LLM)
-python cobot.py
+- python cobot.py
 
 You will be prompted to enter a command such as:
 
@@ -154,7 +156,7 @@ The LLM extracts the target object and triggers detection.
 
 
 #### Voice-controlled detection (STT + LLM + Vision)
-python cobot_stt.py
+- python cobot_stt.py
 
 
 Instructions:
@@ -172,29 +174,29 @@ The system parses the object and runs detection
 
 #### Vision Pipeline
 
-Live camera feed → YOLO segmentation
+- Live camera feed → YOLO segmentation
 
-Zero-shot class prompting
+- Zero-shot class prompting
 
-Temporal stability check
+- Temporal stability check
 
-Edge-safe object capture
+- Edge-safe object capture
 
 #### Language Pipeline
 
-Text or speech command
+- Text or speech command
 
-LLaMA extracts object noun phrase
+- LLaMA extracts object noun phrase
 
-Parsed object passed to YOLO
+- Parsed object passed to YOLO
 
 #### Voice Pipeline (cobot_stt.py)
 
-Microphone audio → Faster-Whisper (STT)
+- Microphone audio → Faster-Whisper (STT)
 
-STT output → LLaMA parsing
+- STT output → LLaMA parsing
 
-Parsed object → Vision pipeline
+- Parsed object → Vision pipeline
 
 
 ##### All inference runs fully offline.
@@ -202,24 +204,24 @@ Parsed object → Vision pipeline
 
 ## ⚙️ System Requirements
 
-OS: Windows 10/11 (tested)
+- OS: Windows 10/11 (tested)
 
-Python: 3.10
+- Python: 3.10
 
-Webcam (DirectShow compatible)
+- Webcam (DirectShow compatible)
 
-Microphone (for cobot_stt.py)
+- Microphone (for cobot_stt.py)
 
-NVIDIA GPU recommended (CUDA 12.x)
+- NVIDIA GPU recommended (CUDA 12.x)
 
-CPU-only mode is supported but slower.
+- CPU-only mode is supported but slower.
 
 ## 📌 Notes
 
-Large model files are not committed
+- Large model files are not committed
 
-Output images are runtime artifacts
+- Output images are runtime artifacts
 
-First run may take time due to model download
+- First run may take time due to model download
 
-DirectShow (cv2.CAP_DSHOW) is used on Windows
+- DirectShow (cv2.CAP_DSHOW) is used on Windows

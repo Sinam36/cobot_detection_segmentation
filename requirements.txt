@@ -1,3 +1,6 @@
 torch==2.5.1
 ultralytics==8.4.7
 opencv-python==4.13.0.90
+
+llama-cpp-python==0.3.16
+huggingface-hub==0.36.0

@@ -2,24 +2,102 @@ import cv2
 import time
 import torch
 import os
-from ultralytics import YOLO
 import socket
+import re
+from ultralytics import YOLO
+from llama_cpp import Llama
+from huggingface_hub import hf_hub_download
 
+# --- CONFIGURATION ---
 CAMERA_INDEX = 1
 MODEL_PATH = "weights/yoloe-26l-seg.pt"
 SAVE_DIR = "images"
 
+# Detection Constants
 CONF_THRES = 0.05    
-EDGE_MARGIN = 15        # Pixel buffer from edge (excludes partial objects)
-REQUIRED_STABILITY = 4    # Number of consistent frames required before capturing
+EDGE_MARGIN = 15          # Pixel buffer from edge
+REQUIRED_STABILITY = 4    # Frames required for stability
 
-try:
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = '10.202.3.58'
-    port = 5000
-    server.connect((host, port))
-except Exception as e: 
-    server = None
+# LLM Constants
+LLM_REPO = "bartowski/Llama-3.2-3B-Instruct-GGUF"
+LLM_FILE = "Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+WEIGHTS_DIR = "weights"
+LLM_LOCAL_PATH = os.path.join(WEIGHTS_DIR, LLM_FILE)
+
+# # --- SOCKET SETUP ---
+# try:
+#     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#     host = '10.202.3.58'
+#     port = 5000
+#     server.connect((host, port))
+# except Exception as e: 
+#     print(f"Socket connection failed (ignoring): {e}")
+#     server = None
+
+
+class CommandParser:
+    def __init__(self):
+        print(f"Loading Llama 3.2-3B-Instruct...")
+        
+        # Download if not exists
+        if not os.path.exists(LLM_LOCAL_PATH):
+            print(f"Downloading {LLM_FILE} to '{WEIGHTS_DIR}/'...")
+            hf_hub_download(
+                repo_id=LLM_REPO, 
+                filename=LLM_FILE, 
+                local_dir=WEIGHTS_DIR, 
+                local_dir_use_symlinks=False 
+            )
+        else:
+            print(f"Found local model at {LLM_LOCAL_PATH}")
+
+        # Initialize LLM
+        self.llm = Llama(
+            model_path=LLM_LOCAL_PATH, 
+            n_gpu_layers=-1, # Offload all to GPU if available
+            n_ctx=2048,      
+            verbose=False
+        )
+
+    def parse_command(self, user_text):
+        """Extracts the target object from a text command."""
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a robotic command parser.\n"
+                    "Extract the TARGET OBJECT NAME from the user command.\n\n"
+                    "CRITICAL CONSTRAINTS:\n"
+                    "1. Output ONLY the object noun phrase. No verbs, no articles.\n"
+                    "2. Preserve adjectives only if explicitly spoken.\n"
+                    "3. Remove action words (pick up, grab, take, etc.).\n"
+                    "4. Output must be lowercase.\n"
+                    "5. If no object mentioned, output: NONE"
+                )
+            },
+            {
+                "role": "user",
+                "content": f"User Command: {user_text}"
+            }
+        ]
+
+        output = self.llm.create_chat_completion(
+            messages=messages,
+            max_tokens=60,      
+            temperature=0.0     
+        )
+        
+        parsed_object = output['choices'][0]['message']['content'].strip().lower()
+        
+        # Cleanup punctuation and specific phrases
+        parsed_object = re.sub(r'[^\w\s]', '', parsed_object) 
+        if "pick up" in parsed_object: parsed_object = parsed_object.replace("pick up", "").strip()
+        
+        if parsed_object == 'none' or not parsed_object:
+            return None
+        
+        return parsed_object
+
 
 def is_box_fully_in_frame(box, frame_shape, margin):
     """
@@ -37,41 +115,54 @@ def is_box_fully_in_frame(box, frame_shape, margin):
     
     return True
 
+
 def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f" Using device: {device}")
 
     os.makedirs(SAVE_DIR, exist_ok=True)
+    os.makedirs(WEIGHTS_DIR, exist_ok=True)
+
+    # Initialize LLM Parser
+    parser = CommandParser()
 
     start = time.perf_counter()
     model = YOLO(MODEL_PATH).to(device)
     end = time.perf_counter()
-    
-    print(f"loadin time {end - start}")
+    print(f"YOLO loading time {end - start:.4f}s")
 
     cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
-    
-    start = time.perf_counter()
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-    end = time.perf_counter()
     
-    print(f"start time {end - start}")
-
     if not cap.isOpened():
         raise RuntimeError("Camera could not be opened")
 
     # QUERY LOOP
     while True:
         try:
-            target_class = input("\nEnter object class (or press q to exit): ").strip()
+            # Get text input instead of voice
+            user_input = input("\nEnter command (e.g., 'pick up the red cup') or 'q' to exit: ").strip()
         except EOFError:
             break
             
-        if not target_class or target_class.lower() == 'q':
+        if not user_input or user_input.lower() == 'q':
             break
         
-        if server:
-            server.sendall(b"s")
+        # Parse the input using LLM
+        print("Parsing command...")
+        target_class = parser.parse_command(user_input)
+        
+        if not target_class:
+            print("Could not understand object name. Try again.")
+            continue
+            
+        print(f"parsed target: '{target_class}'")
+        
+        # if server:
+        #     try:
+        #         server.sendall(b"s")
+        #     except:
+        #         pass
 
         model.set_classes([target_class])
         print(f"Detecting class: {target_class}")
@@ -96,6 +187,7 @@ def main():
 
             #  Filter Detections
             valid_box = None
+            final_coords = None
             
             if results.boxes is not None and len(results.boxes) > 0:
                 # Find the best box that is fully in frame
@@ -111,7 +203,6 @@ def main():
             
             if valid_box:
                 stability_counter += 1
-    
                 annotated = valid_box.plot()
                 
                 if stability_counter >= REQUIRED_STABILITY:
@@ -122,7 +213,7 @@ def main():
                 if stability_counter > 0:
                     print(f"Stability Lost (Count was {stability_counter})")
                 stability_counter = 0
-                cv2.putText(annotated, "Searching...", (50, 50), 
+                cv2.putText(annotated, f"Scanning for {target_class}...", (50, 50), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
             # Display
@@ -134,7 +225,8 @@ def main():
                 filename = f"{SAVE_DIR}/{target_class.replace(' ', '_')}_{timestamp}.jpg"
                 cv2.imwrite(filename, annotated)
                 print(f"Saved detection: {filename}")
-                print("Coordinates : ", final_coords.tolist())
+                if final_coords is not None:
+                    print("Coordinates : ", final_coords.tolist())
                 cv2.waitKey(500) 
 
             latency_ms = (time.time() - start_loop) * 1000
@@ -154,14 +246,17 @@ def main():
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        if server:
-            server.sendall(b'f')
+        # if server:
+        #     try:
+        #         server.sendall(b'f')
+        #     except:
+        #         pass
 
     # Cleanup
     cap.release()
     cv2.destroyAllWindows()
-    if server:
-        server.close()
+    # if server:
+    #     server.close()
 
 if __name__ == "__main__":
     main()
